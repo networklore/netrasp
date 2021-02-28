@@ -1,0 +1,112 @@
+package netrasp
+
+import (
+	"context"
+	"fmt"
+	"io"
+
+	"golang.org/x/crypto/ssh"
+)
+
+type Connection interface {
+	Dial(context.Context) error
+	Close(context.Context) error
+	Send(context.Context, string) error
+	Recv(context.Context) io.Reader
+	GetHost() Host
+}
+
+type SSHConnection struct {
+	Config  *ssh.ClientConfig
+	Host    Host
+	reader  io.Reader
+	writer  io.Writer
+	session *ssh.Session
+}
+
+type Host struct {
+	Address  string
+	Port     int
+	Platform Platform
+	password string
+}
+
+func NewSSHConnection(host string, platform string, username string, password string) (*SSHConnection, error) {
+	hostKeyCallback, err := KnownHosts()
+	if err != nil {
+		return nil, err
+	}
+	config := &ssh.ClientConfig{
+		User:            username,
+		HostKeyCallback: hostKeyCallback,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(password),
+		},
+	}
+	config.SetDefaults()
+
+	return &SSHConnection{Config: config, Host: Host{Address: host, Port: 22, password: password}}, nil
+}
+
+func (s *SSHConnection) Dial(ctx context.Context) error {
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", s.Host.Address, s.Host.Port), s.Config)
+	if err != nil {
+		return fmt.Errorf("unable to establish connection: %w", err)
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		return fmt.Errorf("unable to open new session: %w", err)
+	}
+
+	terminalMode := ssh.TerminalModes{
+		ssh.ECHO:          0,
+		ssh.TTY_OP_ISPEED: 28800,
+		ssh.TTY_OP_OSPEED: 28800,
+	}
+	err = session.RequestPty("xterm", 80, 40, terminalMode)
+	if err != nil {
+		return fmt.Errorf("error requesting pty terminal: %w", err)
+	}
+
+	s.reader, err = session.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("error requesting StdoutPipe: %w", err)
+	}
+	s.writer, err = session.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("error requesting StdinPipe: %w", err)
+	}
+
+	err = session.Shell()
+	if err != nil {
+		return fmt.Errorf("failed to start shell: %w", err)
+	}
+
+	s.session = session
+
+	return nil
+}
+
+func (s *SSHConnection) GetHost() Host {
+	return s.Host
+}
+
+func (s *SSHConnection) Close(ctx context.Context) error {
+	s.session.Close()
+
+	return nil
+}
+
+func (s *SSHConnection) Send(ctx context.Context, command string) error {
+	_, err := s.writer.Write([]byte(command + "\n"))
+	if err != nil {
+		return fmt.Errorf("unable to send command to device: %w", err)
+	}
+
+	return nil
+}
+
+func (s *SSHConnection) Recv(ctx context.Context) io.Reader {
+	return newContextReader(ctx, s.reader)
+}
