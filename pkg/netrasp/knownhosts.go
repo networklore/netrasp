@@ -17,6 +17,7 @@ func missingHostFile(_ string, _ net.Addr, _ ssh.PublicKey) error {
 	return errKnownHostsMissingError
 }
 
+// KnownHosts loads ssh known_hosts from default locations.
 func KnownHosts() (ssh.HostKeyCallback, error) {
 	userHome, err := os.UserHomeDir()
 

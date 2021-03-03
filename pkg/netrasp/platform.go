@@ -8,6 +8,7 @@ import (
 
 var errInvalidPlatformError = errors.New("invalid platform selected")
 
+// Platform defines an interface for network drivers.
 type Platform interface {
 	// Disconnect from a device
 	Close(context.Context) error
@@ -23,6 +24,7 @@ type Platform interface {
 	RunUntil(context.Context, string, *regexp.Regexp) (string, error)
 }
 
+// InitDevice returns a platform / network driver.
 func InitDevice(platform string, connection Connection) (Platform, error) {
 	switch platform {
 	case "asa":

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Connection defines an interface for Netrasp connections.
 type Connection interface {
 	Dial(context.Context) error
 	Close(context.Context) error
@@ -16,6 +17,15 @@ type Connection interface {
 	GetHost() Host
 }
 
+// Host defines host specific information.
+type Host struct {
+	Address  string
+	Port     int
+	Platform Platform
+	password string
+}
+
+// SSHConnection contains configuration and connection information for SSH.
 type SSHConnection struct {
 	Config  *ssh.ClientConfig
 	Host    Host
@@ -24,13 +34,7 @@ type SSHConnection struct {
 	session *ssh.Session
 }
 
-type Host struct {
-	Address  string
-	Port     int
-	Platform Platform
-	password string
-}
-
+// NewSSHConnection creates a new *SSHConnection.
 func NewSSHConnection(host string, platform string, username string, password string) (*SSHConnection, error) {
 	hostKeyCallback, err := KnownHosts()
 	if err != nil {
@@ -48,6 +52,7 @@ func NewSSHConnection(host string, platform string, username string, password st
 	return &SSHConnection{Config: config, Host: Host{Address: host, Port: 22, password: password}}, nil
 }
 
+// Dial opens an SSH connection.
 func (s *SSHConnection) Dial(ctx context.Context) error {
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", s.Host.Address, s.Host.Port), s.Config)
 	if err != nil {
@@ -88,16 +93,19 @@ func (s *SSHConnection) Dial(ctx context.Context) error {
 	return nil
 }
 
+// GetHost returns information about the connected host.
 func (s *SSHConnection) GetHost() Host {
 	return s.Host
 }
 
+// Close disconnects from the device.
 func (s *SSHConnection) Close(ctx context.Context) error {
 	s.session.Close()
 
 	return nil
 }
 
+// Send is used to write commands to the device.
 func (s *SSHConnection) Send(ctx context.Context, command string) error {
 	_, err := s.writer.Write([]byte(command + "\n"))
 	if err != nil {
@@ -107,6 +115,7 @@ func (s *SSHConnection) Send(ctx context.Context, command string) error {
 	return nil
 }
 
+// Recv is used to read data from the device.
 func (s *SSHConnection) Recv(ctx context.Context) io.Reader {
 	return newContextReader(ctx, s.reader)
 }

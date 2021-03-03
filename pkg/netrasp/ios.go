@@ -10,10 +10,12 @@ import (
 var generalPrompt = regexp.MustCompile(`(^[a-zA-Z0-9_-]+[#|>])|(^[a-zA-Z0-9_-]+\([a-z-]+\)#)`)
 var enablePrompt = regexp.MustCompile(`^[Pp]assword:`)
 
+// Ios is the Netrasp driver for Cisco IOS.
 type Ios struct {
 	Connection Connection
 }
 
+// Close connection to device.
 func (i Ios) Close(ctx context.Context) error {
 	i.Connection.Close(ctx)
 
@@ -42,10 +44,12 @@ func (i Ios) Configure(ctx context.Context, commands []string) (string, error) {
 	return output, nil
 }
 
+// Dial opens a connection to a device.
 func (i Ios) Dial(ctx context.Context) error {
 	return establishConnection(ctx, i, i.Connection, i.basePrompt(), "terminal length 0")
 }
 
+// Enable elevates privileges.
 func (i Ios) Enable(ctx context.Context) error {
 	_, err := i.RunUntil(ctx, "enable", enablePrompt)
 	if err != nil {
@@ -61,6 +65,7 @@ func (i Ios) Enable(ctx context.Context) error {
 	return nil
 }
 
+// Run executes a command on a device.
 func (i Ios) Run(ctx context.Context, command string) (string, error) {
 	output, err := i.RunUntil(ctx, command, i.basePrompt())
 	if err != nil {
@@ -78,6 +83,7 @@ func (i Ios) Run(ctx context.Context, command string) (string, error) {
 	return result, nil
 }
 
+// RunUntil executes a command and reads until the provided prompt.
 func (i Ios) RunUntil(ctx context.Context, command string, prompt *regexp.Regexp) (string, error) {
 	err := i.Connection.Send(ctx, command)
 	if err != nil {

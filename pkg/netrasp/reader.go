@@ -30,6 +30,7 @@ func newContextReader(ctx context.Context, r io.Reader) io.Reader {
 	}
 }
 
+// ReadUntilPrompt reads until the specified prompt is found and returns the read data.
 func ReadUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
 	var output string
 	reader := newContextReader(ctx, r)
