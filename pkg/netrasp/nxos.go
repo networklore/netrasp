@@ -5,11 +5,11 @@ import (
 )
 
 // Nxos is the Netrasp driver for Cisco NXOS.
-type Nxos struct {
-	Ios
+type nxos struct {
+	ios
 }
 
 // Enable just silently works on Nxos.
-func (n Nxos) Enable(ctx context.Context) error {
+func (n nxos) Enable(ctx context.Context) error {
 	return nil
 }

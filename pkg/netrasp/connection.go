@@ -14,7 +14,7 @@ type Connection interface {
 	Close(context.Context) error
 	Send(context.Context, string) error
 	Recv(context.Context) io.Reader
-	GetHost() Host
+	GetHost() *Host
 }
 
 // Host defines host specific information.
@@ -26,34 +26,16 @@ type Host struct {
 }
 
 // SSHConnection contains configuration and connection information for SSH.
-type SSHConnection struct {
+type sshConnection struct {
 	Config  *ssh.ClientConfig
-	Host    Host
+	Host    *Host
 	reader  io.Reader
 	writer  io.Writer
 	session *ssh.Session
 }
 
-// NewSSHConnection creates a new *SSHConnection.
-func NewSSHConnection(host string, platform string, username string, password string) (*SSHConnection, error) {
-	hostKeyCallback, err := KnownHosts()
-	if err != nil {
-		return nil, err
-	}
-	config := &ssh.ClientConfig{
-		User:            username,
-		HostKeyCallback: hostKeyCallback,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-		},
-	}
-	config.SetDefaults()
-
-	return &SSHConnection{Config: config, Host: Host{Address: host, Port: 22, password: password}}, nil
-}
-
 // Dial opens an SSH connection.
-func (s *SSHConnection) Dial(ctx context.Context) error {
+func (s *sshConnection) Dial(ctx context.Context) error {
 	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", s.Host.Address, s.Host.Port), s.Config)
 	if err != nil {
 		return fmt.Errorf("unable to establish connection: %w", err)
@@ -94,19 +76,19 @@ func (s *SSHConnection) Dial(ctx context.Context) error {
 }
 
 // GetHost returns information about the connected host.
-func (s *SSHConnection) GetHost() Host {
+func (s *sshConnection) GetHost() *Host {
 	return s.Host
 }
 
 // Close disconnects from the device.
-func (s *SSHConnection) Close(ctx context.Context) error {
+func (s *sshConnection) Close(ctx context.Context) error {
 	s.session.Close()
 
 	return nil
 }
 
 // Send is used to write commands to the device.
-func (s *SSHConnection) Send(ctx context.Context, command string) error {
+func (s *sshConnection) Send(ctx context.Context, command string) error {
 	_, err := s.writer.Write([]byte(command + "\n"))
 	if err != nil {
 		return fmt.Errorf("unable to send command to device: %w", err)
@@ -116,6 +98,6 @@ func (s *SSHConnection) Send(ctx context.Context, command string) error {
 }
 
 // Recv is used to read data from the device.
-func (s *SSHConnection) Recv(ctx context.Context) io.Reader {
+func (s *sshConnection) Recv(ctx context.Context) io.Reader {
 	return newContextReader(ctx, s.reader)
 }

@@ -2,13 +2,29 @@ package netrasp
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
-
-	"golang.org/x/crypto/ssh"
 )
 
+func TestFailWithNoUser(t *testing.T) {
+	_, err := New("testdevice", WithDriver("ios"))
+	if errors.Is(err, errUserNotSpecified) != true {
+		t.Fatalf("expencted to encounter error '%v', actual error '%v'", errUserNotSpecified, err)
+	}
+}
+
+func TestConfigOptions(t *testing.T) {
+	_, err := New("testdevice", WithDriver("asa"), WithUsernamePassword("admin", "password"), WithInsecureIgnoreHostKey(), WithSSHPort(2222), WithSSHCipher("aes128-cbc"))
+	if err != nil {
+		t.Fatalf("expected device to be initialized: %v", err)
+	}
+}
+
 func TestNxosTimingRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping nxos integration test in short mode")
+	}
 	connection := connect(t, "sbx-nxos-mgmt.cisco.com", "nxos", "admin", "Admin_1234!")
 	defer connection.Close(context.Background())
 
@@ -49,6 +65,9 @@ func TestNxosTimingRun(t *testing.T) {
 }
 
 func TestIosEnable(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping ios integration test in short mode")
+	}
 	connection := connect(t, "ios-xe-mgmt.cisco.com", "ios", "developer", "C1sco12345")
 	defer connection.Close(context.Background())
 
@@ -63,6 +82,9 @@ func TestIosEnable(t *testing.T) {
 }
 
 func TestIosConfigure(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping ios integration test in short mode")
+	}
 	connection := connect(t, "ios-xe-mgmt.cisco.com", "ios", "developer", "C1sco12345")
 	defer connection.Close(context.Background())
 
@@ -94,6 +116,9 @@ func TestIosConfigure(t *testing.T) {
 }
 
 func TestIosTimingRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping ios integration test in short mode")
+	}
 	connection := connect(t, "ios-xe-mgmt.cisco.com", "ios", "developer", "C1sco12345")
 	defer connection.Close(context.Background())
 
@@ -131,16 +156,27 @@ func TestIosTimingRun(t *testing.T) {
 
 func connect(t *testing.T, host string, platform string, username string, password string) Platform {
 	t.Helper()
-	client, err := NewSSHConnection(host, platform, username, password)
-	client.Host.Port = 8181
-	client.Config.HostKeyCallback = ssh.InsecureIgnoreHostKey() // nolint: gosec
+	/*
+		client, err := NewSSHConnection(host, platform, username, password)
+		client.Host.Port = 8181
+		client.Config.HostKeyCallback = ssh.InsecureIgnoreHostKey() // nolint: gosec
 
+		if err != nil {
+			t.Fatalf("could not create new client. Error: '%v'", err)
+		}
+		device, err := InitDevice(platform, client)
+		if err != nil {
+			t.Fatalf("could not initialize device. Error: '%v'", err)
+		}
+	*/
+	device, err := New(host,
+		WithUsernamePassword(username, password),
+		WithDriver(platform),
+		WithInsecureIgnoreHostKey(),
+		WithSSHPort(8181),
+	)
 	if err != nil {
-		t.Fatalf("could not create new client. Error: '%v'", err)
-	}
-	device, err := InitDevice(platform, client)
-	if err != nil {
-		t.Fatalf("could not initialize device. Error: '%v'", err)
+		t.Fatalf("unable to create device. Error: '%v':", err)
 	}
 
 	err = device.Dial(context.Background())

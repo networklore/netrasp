@@ -25,20 +25,20 @@ type Platform interface {
 }
 
 // InitDevice returns a platform / network driver.
-func InitDevice(platform string, connection Connection) (Platform, error) {
+func initDevice(platform string, connection Connection) (Platform, error) {
 	switch platform {
 	case "asa":
-		driver := &Asa{}
+		driver := &asa{}
 		driver.Connection = connection
 
 		return driver, nil
 	case "nxos":
-		driver := &Nxos{}
+		driver := &nxos{}
 		driver.Connection = connection
 
 		return driver, nil
 	case "ios":
-		driver := &Ios{}
+		driver := &ios{}
 		driver.Connection = connection
 
 		return driver, nil

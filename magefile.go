@@ -14,6 +14,22 @@ func Test() error {
 		"test",
 		"-v",
 		"./...",
+		"-p",
+		"1",
+		"-coverprofile=cover.out",
+		"-coverprofile=coverage.txt",
+		"-covermode=atomic",
+	}
+	return sh.RunV("go", params...)
+}
+
+// Run Tests
+func UnitTest() error {
+	params := []string{
+		"test",
+		"-v",
+		"./...",
+		"-short",
 		"-coverprofile=cover.out",
 		"-coverprofile=coverage.txt",
 		"-covermode=atomic",
