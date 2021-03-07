@@ -15,7 +15,13 @@ func TestFailWithNoUser(t *testing.T) {
 }
 
 func TestConfigOptions(t *testing.T) {
-	_, err := New("testdevice", WithDriver("asa"), WithUsernamePassword("admin", "password"), WithInsecureIgnoreHostKey(), WithSSHPort(2222), WithSSHCipher("aes128-cbc"))
+	_, err := New("testdevice",
+		WithDriver("asa"),
+		WithUsernamePassword("admin", "password"),
+		WithInsecureIgnoreHostKey(),
+		WithSSHPort(2222),
+		WithSSHCipher("aes128-cbc"),
+	)
 	if err != nil {
 		t.Fatalf("expected device to be initialized: %v", err)
 	}
@@ -156,19 +162,7 @@ func TestIosTimingRun(t *testing.T) {
 
 func connect(t *testing.T, host string, platform string, username string, password string) Platform {
 	t.Helper()
-	/*
-		client, err := NewSSHConnection(host, platform, username, password)
-		client.Host.Port = 8181
-		client.Config.HostKeyCallback = ssh.InsecureIgnoreHostKey() // nolint: gosec
 
-		if err != nil {
-			t.Fatalf("could not create new client. Error: '%v'", err)
-		}
-		device, err := InitDevice(platform, client)
-		if err != nil {
-			t.Fatalf("could not initialize device. Error: '%v'", err)
-		}
-	*/
 	device, err := New(host,
 		WithUsernamePassword(username, password),
 		WithDriver(platform),

@@ -8,8 +8,8 @@ import (
 	"os"
 )
 
-// Run Tests
-func Test() error {
+// Run Integrationtests
+func Integration() error {
 	params := []string{
 		"test",
 		"-v",
@@ -23,8 +23,8 @@ func Test() error {
 	return sh.RunV("go", params...)
 }
 
-// Run Tests
-func UnitTest() error {
+// Run Unittests
+func Test() error {
 	params := []string{
 		"test",
 		"-v",

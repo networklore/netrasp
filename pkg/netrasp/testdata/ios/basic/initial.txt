@@ -1,0 +1,6 @@
+Welcome to the Dummy Device
+
+Thanks for stopping by.
+
+
+router1#
