@@ -20,32 +20,37 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/networklore/netrasp/pkg/netrasp"
 )
 
-
 func main() {
-	// Request a new client using the ios driver.
-	client, err := netrasp.New("switch1", "ios", "my_user", "my_password123")
+	device, err := netrasp.New("switch1",
+		netrasp.WithUsernamePassword("my_user", "my_password123"),
+		netrasp.WithDriver("ios"),
+	)
 	if err != nil {
-		log.Fatalf("unable to create client: %w", err)
+		log.Fatalf("unable to create client: %v", err)
 	}
 
-	// Connect to the device
-	device, err := client.Connect(context.Background())
-	defer device.Disconnect()
+	ctx, cancelOpen := context.WithTimeout(context.Background(), 2000*time.Millisecond)
+	defer cancelOpen()
+	err = device.Dial(ctx)
 	if err != nil {
-		log.Fatalf("unable to connect: %w", err)
+		fmt.Printf("unable to connect: %v\n", err)
+
+		return
 	}
 
-	// Run command against the device.
-	output, err := device.Run(context.Background(), "show inventory")
+	ctx, cancelRun := context.WithTimeout(context.Background(), 300*time.Millisecond)
+	defer cancelRun()
+	output, err := device.Run(ctx, "show running")
 	if err != nil {
-		log.Fatalf("unable to run command: %w", err)
-	}
+		fmt.Printf("unable to run command: %v\n", err)
 
-	// Display the results.
+		return
+	}
 	fmt.Println(output)
 }
 ```
