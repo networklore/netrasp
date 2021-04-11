@@ -1,0 +1,45 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  test:
+    env:
+      GOPROXY: https://proxy.golang.org
+      GO111MODULE: on
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Install Mage
+      run: go get github.com/magefile/mage@07afc7d24f4d6d6442305d49552f04fbda5ccb3e
+    - name: Checkout code
+      uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+    - name: Test
+      run: |
+        mage -v test
+  test_integration:
+    env:
+      GOPROXY: https://proxy.golang.org
+      GO111MODULE: on
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Install Mage
+      run: go get github.com/magefile/mage@07afc7d24f4d6d6442305d49552f04fbda5ccb3e
+    - name: Checkout code
+      uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+    - name: Test
+      run: |
+        mage -v integration
