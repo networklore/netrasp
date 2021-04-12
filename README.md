@@ -70,6 +70,11 @@ something like [Gornir](https://github.com/nornir-automation/gornir) to get
 the same type of experience you'd have from using [Netmiko](https://github.com/ktbyers/netmiko)
 and [Nornir](https://github.com/nornir-automation/nornir) in the Python world.
 
+Blog Posts
+----------
+
+* [Hello Netrasp](https://networklore.com/hello-netrasp/)
+
 Credits
 -------
 
