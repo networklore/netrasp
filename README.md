@@ -90,3 +90,6 @@ library, so I made a [fork](https://github.com/ogenstad/crypto) (referenced in
 the go.mod file for Netrasp). In the file
 https://github.com/golang/crypto/blob/master/ssh/buffer.go, I needed to change
 the Read() method. Instead of hanging at `b.Cond.Wait()`, I added `return 0, nil`.
+Edit your local go.mod file if you want a similar replacement to avoid blocking
+reads:
+`replace golang.org/x/crypto => github.com/ogenstad/crypto v0.0.0-20210308070823-6d211c1ce3d7`
