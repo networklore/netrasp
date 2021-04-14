@@ -13,27 +13,27 @@ type sros struct {
 }
 
 // Close connection to device.
-func (i sros) Close(ctx context.Context) error {
-	i.Connection.Close(ctx)
+func (s sros) Close(ctx context.Context) error {
+	s.Connection.Close(ctx)
 
 	return nil
 }
 
 // Configure device.
-func (i sros) Configure(ctx context.Context, commands []string) (string, error) {
+func (s sros) Configure(ctx context.Context, commands []string) (string, error) {
 	var output string
-	_, err := i.Run(ctx, "edit-config exclusive")
+	_, err := s.Run(ctx, "edit-config exclusive")
 	if err != nil {
 		return "", fmt.Errorf("unable to enter exclusive edit mode: %w", err)
 	}
 	for _, command := range commands {
-		result, err := i.Run(ctx, command)
+		result, err := s.Run(ctx, command)
 		if err != nil {
 			return output, fmt.Errorf("unable to run command '%s': %w", command, err)
 		}
 		output += result
 	}
-	_, err = i.Run(ctx, "commit")
+	_, err = s.Run(ctx, "commit")
 	if err != nil {
 		return output, fmt.Errorf("unable to commit configuration: %w", err)
 	}
@@ -42,18 +42,18 @@ func (i sros) Configure(ctx context.Context, commands []string) (string, error) 
 }
 
 // Dial opens a connection to a device.
-func (i sros) Dial(ctx context.Context) error {
-	return establishConnection(ctx, i, i.Connection, i.basePrompt(), "environment more false")
+func (s sros) Dial(ctx context.Context) error {
+	return establishConnection(ctx, s, s.Connection, s.basePrompt(), "environment more false")
 }
 
 // Enable elevates privileges.
-func (i sros) Enable(ctx context.Context) error {
+func (s sros) Enable(ctx context.Context) error {
 	return nil
 }
 
 // Run executes a command on a device.
-func (i sros) Run(ctx context.Context, command string) (string, error) {
-	output, err := i.RunUntil(ctx, command, i.basePrompt())
+func (s sros) Run(ctx context.Context, command string) (string, error) {
+	output, err := s.RunUntil(ctx, command, s.basePrompt())
 	if err != nil {
 		return "", err
 	}
@@ -77,13 +77,13 @@ func (i sros) Run(ctx context.Context, command string) (string, error) {
 }
 
 // RunUntil executes a command and reads until the provided prompt.
-func (i sros) RunUntil(ctx context.Context, command string, prompt *regexp.Regexp) (string, error) {
-	err := i.Connection.Send(ctx, command)
+func (s sros) RunUntil(ctx context.Context, command string, prompt *regexp.Regexp) (string, error) {
+	err := s.Connection.Send(ctx, command)
 	if err != nil {
 		return "", fmt.Errorf("unable to send command to device: %w", err)
 	}
 
-	reader := i.Connection.Recv(ctx)
+	reader := s.Connection.Recv(ctx)
 	output, err := readUntilPrompt(ctx, reader, prompt)
 	if err != nil {
 		return "", err
@@ -92,6 +92,6 @@ func (i sros) RunUntil(ctx context.Context, command string, prompt *regexp.Regex
 	return output, nil
 }
 
-func (i sros) basePrompt() *regexp.Regexp {
+func (s sros) basePrompt() *regexp.Regexp {
 	return regexp.MustCompile(`^[ABCD]:\S+@\S+#`)
 }
