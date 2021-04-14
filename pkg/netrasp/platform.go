@@ -42,6 +42,11 @@ func initDevice(platform string, conn connection) (Platform, error) {
 		driver.Connection = conn
 
 		return driver, nil
+	case "sros":
+		driver := &sros{}
+		driver.Connection = conn
+
+		return driver, nil
 	}
 
 	return nil, errInvalidPlatformError

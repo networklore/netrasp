@@ -22,7 +22,7 @@ type config struct {
 	driver     string
 }
 
-// New creates a new SSH connction to the device.
+// New creates a new SSH connection to the device.
 func New(hostname string, opts ...ConfigOpt) (Platform, error) {
 	config := &config{
 		SSHConfig: &ssh.ClientConfig{},
