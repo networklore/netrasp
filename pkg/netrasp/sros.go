@@ -38,6 +38,11 @@ func (s sros) Configure(ctx context.Context, commands []string) (string, error) 
 		return output, fmt.Errorf("unable to commit configuration: %w", err)
 	}
 
+	_, err = s.Run(ctx, "quit-config")
+	if err != nil {
+		return output, fmt.Errorf("unable to quit from configuration mode: %w", err)
+	}
+
 	return output, nil
 }
 
