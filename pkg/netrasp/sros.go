@@ -75,7 +75,6 @@ func (s sros) Run(ctx context.Context, command string) (string, error) {
 		} else {
 			result += lines[i] + "\n"
 		}
-
 	}
 
 	return result, nil
