@@ -58,9 +58,12 @@ func main() {
 
 Network Device Support
 ----------------------
-The initial release of Netrasp comes with support for Cisco IOS, Cisco NXOS, and
-Cisco ASA. As you’ve seen from above, you specify the platform using the
-WithDriver option, currently choosing one of "asa" "ios" "nxos".
+The initial release of Netrasp comes with support for the following platforms:
+
+* Cisco IOS: netrasp.WithDriver("ios")
+* Cisco NXOS: netrasp.WithDriver("nxos")
+* Cisco ASA: netrasp.WithDriver("asa")
+* Nokia SR OS: netrasp.WithDriver("sros")
 
 Use cases
 ---------
