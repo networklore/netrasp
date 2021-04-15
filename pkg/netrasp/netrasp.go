@@ -126,3 +126,12 @@ func WithSSHCipher(name string) ConfigOpt {
 		c.SSHConfig.Ciphers = append(c.SSHConfig.Ciphers, name)
 	})
 }
+
+// WithSSHKeyExchange allows you to configure additional SSH key exchange algorithms.
+// The parameter can be useful if your device doesn't support the default
+// algorithms.
+func WithSSHKeyExchange(name string) ConfigOpt {
+	return newFuncConfigOpt(func(c *config) {
+		c.SSHConfig.KeyExchanges = append(c.SSHConfig.KeyExchanges, name)
+	})
+}
