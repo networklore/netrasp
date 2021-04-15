@@ -2,11 +2,15 @@ package netrasp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
 	"strings"
 )
+
+var errContextTimeout = errors.New("context timeout")
+var errRead = errors.New("reader error")
 
 type contextReader struct {
 	ctx context.Context
@@ -45,7 +49,7 @@ func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (s
 
 				bytes, err := r.Read(buffer)
 				if err != nil {
-					errCh <- fmt.Errorf("error reading output from device: %w", err)
+					errCh <- fmt.Errorf("error reading output from device %w: %v", errRead, err)
 				}
 				latestOutput := string(buffer[:bytes])
 
@@ -58,10 +62,10 @@ func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (s
 				matches := prompt.FindStringSubmatch(lines[len(lines)-1])
 				if len(matches) != 0 {
 					bufCh <- output
+
 					return
 				}
 			}
-
 		}
 	}()
 
@@ -71,6 +75,6 @@ func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (s
 	case err := <-errCh:
 		return "", err
 	case <-ctx.Done():
-		return "", fmt.Errorf("time out waiting to find prompt")
+		return "", errContextTimeout
 	}
 }
