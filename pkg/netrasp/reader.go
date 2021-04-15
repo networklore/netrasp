@@ -32,7 +32,6 @@ func newContextReader(ctx context.Context, r io.Reader) io.Reader {
 // readUntilPrompt reads until the specified prompt is found and returns the read data.
 func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
 	var output string
-	// buffered channel
 	bufCh := make(chan string)
 	errCh := make(chan error)
 
