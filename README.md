@@ -64,6 +64,7 @@ The initial release of Netrasp comes with support for the following platforms:
 * Cisco NXOS: netrasp.WithDriver("nxos")
 * Cisco ASA: netrasp.WithDriver("asa")
 * Nokia SR OS: netrasp.WithDriver("sros")
+* Juniper JunOS: netrasp.WithDriver("junos")
 
 Use cases
 ---------
