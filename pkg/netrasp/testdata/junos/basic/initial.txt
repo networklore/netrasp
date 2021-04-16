@@ -1,0 +1,2 @@
+--- JUNOS 14.1R1.10 built 2014-06-07 09:37:07 UTC
+username@vmx>

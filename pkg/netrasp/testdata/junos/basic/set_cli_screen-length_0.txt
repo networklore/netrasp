@@ -1,0 +1,3 @@
+Screen length set to 0
+
+username@vmx> 
