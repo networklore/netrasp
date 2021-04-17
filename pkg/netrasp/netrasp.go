@@ -137,7 +137,7 @@ func WithSSHKeyExchange(name string) ConfigOpt {
 	})
 }
 
-// WithDialTimeout allows you to configure timeout for dialing SSH server
+// WithDialTimeout allows you to configure timeout for dialing SSH server.
 func WithDialTimeout(t time.Duration) ConfigOpt {
 	return newFuncConfigOpt(func(c *config) {
 		c.SSHConfig.Timeout = t
