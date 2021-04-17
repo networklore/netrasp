@@ -2,25 +2,49 @@ package netrasp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
 	"strings"
-	"time"
 )
+
+var errRead = errors.New("reader error")
 
 type contextReader struct {
 	ctx context.Context
 	r   io.Reader
 }
 
+type readResult struct {
+	n   int
+	err error
+}
+
 func (c *contextReader) Read(p []byte) (n int, err error) {
+	ctx, cancel := context.WithCancel(c.ctx)
+	defer cancel()
+	rrCh := make(chan *readResult)
+
+	go func() {
+		select {
+		case rrCh <- c.read(p):
+		case <-ctx.Done():
+		}
+	}()
+
 	select {
-	case <-c.ctx.Done():
-		return 0, c.ctx.Err()
-	default:
-		return c.r.Read(p)
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	case rr := <-rrCh:
+		return rr.n, rr.err
 	}
+}
+
+func (c *contextReader) read(p []byte) *readResult {
+	n, err := c.r.Read(p)
+
+	return &readResult{n, err}
 }
 
 func newContextReader(ctx context.Context, r io.Reader) io.Reader {
@@ -33,14 +57,13 @@ func newContextReader(ctx context.Context, r io.Reader) io.Reader {
 // readUntilPrompt reads until the specified prompt is found and returns the read data.
 func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
 	var output string
-	reader := newContextReader(ctx, r)
-
+	r = newContextReader(ctx, r)
 	for {
 		buffer := make([]byte, 10000)
-		time.Sleep(time.Millisecond * 10)
-		bytes, err := reader.Read(buffer)
+
+		bytes, err := r.Read(buffer)
 		if err != nil {
-			return "", fmt.Errorf("error reading output from device: %w", err)
+			return "", fmt.Errorf("error reading output from device %w: %v", errRead, err)
 		}
 		latestOutput := string(buffer[:bytes])
 

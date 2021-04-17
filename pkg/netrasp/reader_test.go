@@ -26,10 +26,10 @@ func TestReader(t *testing.T) {
 func TestReaderTimeout(t *testing.T) {
 	r := strings.NewReader(testReaderBasic)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 0*time.Second)
 	defer cancel()
-	_, err := readUntilPrompt(ctx, r, generalPrompt)
+	out, err := readUntilPrompt(ctx, r, generalPrompt)
 	if err == nil {
-		t.Fatalf("expected read to fail")
+		t.Fatalf("expected reader to timeout, but got %v", out)
 	}
 }

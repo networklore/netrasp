@@ -84,20 +84,3 @@ Credits
 Netrasp was created by [Patrick Ogenstad](https://github.com/ogenstad). Special
 thanks to [David Barroso](https://github.com/dbarrosop) for providing feedback
 and recommendations of the structure and code.
-
-SSH Crypto package
-------------------
-
-When creating Netrasp, I encountered an issue with Golang’s crypto package for
-SSH. The problem is that the Read call when retrieving information from a device
-is blocking, so it wasn’t possible to cancel that read using a Go context. As
-I’m fairly new to Go, it could be just that I’m not aware of the correct way
-to make the read cancelable without starting any goroutines that might remain
-in the background. I only needed one line to be changed within the crypto/ssh
-library, so I made a [fork](https://github.com/ogenstad/crypto) (referenced in
-the go.mod file for Netrasp). In the file
-https://github.com/golang/crypto/blob/master/ssh/buffer.go, I needed to change
-the Read() method. Instead of hanging at `b.Cond.Wait()`, I added `return 0, nil`.
-Edit your local go.mod file if you want a similar replacement to avoid blocking
-reads:
-`replace golang.org/x/crypto => github.com/ogenstad/crypto v0.0.0-20210308070823-6d211c1ce3d7`

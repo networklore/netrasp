@@ -7,6 +7,7 @@ package netrasp
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -133,5 +134,12 @@ func WithSSHCipher(name string) ConfigOpt {
 func WithSSHKeyExchange(name string) ConfigOpt {
 	return newFuncConfigOpt(func(c *config) {
 		c.SSHConfig.KeyExchanges = append(c.SSHConfig.KeyExchanges, name)
+	})
+}
+
+// WithDialTimeout allows you to configure timeout for dialing SSH server
+func WithDialTimeout(t time.Duration) ConfigOpt {
+	return newFuncConfigOpt(func(c *config) {
+		c.SSHConfig.Timeout = t
 	})
 }
