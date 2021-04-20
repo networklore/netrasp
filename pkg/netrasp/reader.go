@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 )
 
 var errRead = errors.New("reader error")
-var repl = strings.NewReplacer("\r\n", "\n", "\r", "\n")
 
 var minReadSize = 10000
 var maxReadSize = 10 * 1000 * 1000
@@ -57,59 +55,6 @@ func newContextReader(ctx context.Context, r io.Reader) io.Reader {
 		ctx: ctx,
 		r:   r,
 	}
-}
-
-// readUntilPrompt reads until the specified prompt is found and returns the read data.
-func readUntilPromptOriginal(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
-	var output string
-	r = newContextReader(ctx, r)
-	for {
-		buffer := make([]byte, 10000)
-
-		bytes, err := r.Read(buffer)
-		if err != nil {
-			return "", fmt.Errorf("error reading output from device %w: %v", errRead, err)
-		}
-		latestOutput := string(buffer[:bytes])
-
-		output += latestOutput
-
-		workingOutput := output
-		workingOutput = strings.ReplaceAll(workingOutput, "\r\n", "\n")
-		workingOutput = strings.ReplaceAll(workingOutput, "\r", "\n")
-		lines := strings.Split(workingOutput, "\n")
-		matches := prompt.FindStringSubmatch(lines[len(lines)-1])
-		if len(matches) != 0 {
-			break
-		}
-	}
-
-	return output, nil
-}
-
-// readUntilPrompt reads until the specified prompt is found and returns the read data.
-func readUntilPromptWithStringsBuilder(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
-	var output = strings.Builder{}
-	rc := newContextReader(ctx, r)
-	readSize := minReadSize
-	for {
-		buffer := make([]byte, readSize)
-
-		n, err := rc.Read(buffer)
-		if err != nil {
-			return "", fmt.Errorf("error reading output from device %w: %v", errRead, err)
-		}
-		if readSize == n && readSize < maxReadSize {
-			readSize *= 2
-		}
-		output.Write(buffer[:n])
-		workingOutput := repl.Replace(output.String())
-		if prompt.MatchString(workingOutput[strings.LastIndex(workingOutput, "\n")+1:]) {
-			break
-		}
-	}
-
-	return output.String(), nil
 }
 
 // readUntilPrompt reads until the specified prompt is found and returns the read data.
