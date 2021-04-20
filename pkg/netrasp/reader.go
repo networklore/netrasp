@@ -1,15 +1,18 @@
 package netrasp
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"regexp"
-	"strings"
 )
 
 var errRead = errors.New("reader error")
+
+var minReadSize = 10000
+var maxReadSize = 10 * 1000 * 1000
 
 type contextReader struct {
 	ctx context.Context
@@ -56,28 +59,26 @@ func newContextReader(ctx context.Context, r io.Reader) io.Reader {
 
 // readUntilPrompt reads until the specified prompt is found and returns the read data.
 func readUntilPrompt(ctx context.Context, r io.Reader, prompt *regexp.Regexp) (string, error) {
-	var output string
-	r = newContextReader(ctx, r)
+	var output = new(bytes.Buffer)
+	rc := newContextReader(ctx, r)
+	readSize := minReadSize
 	for {
-		buffer := make([]byte, 10000)
+		b := make([]byte, readSize)
 
-		bytes, err := r.Read(buffer)
+		n, err := rc.Read(b)
 		if err != nil {
 			return "", fmt.Errorf("error reading output from device %w: %v", errRead, err)
 		}
-		latestOutput := string(buffer[:bytes])
-
-		output += latestOutput
-
-		workingOutput := output
-		workingOutput = strings.ReplaceAll(workingOutput, "\r\n", "\n")
-		workingOutput = strings.ReplaceAll(workingOutput, "\r", "\n")
-		lines := strings.Split(workingOutput, "\n")
-		matches := prompt.FindStringSubmatch(lines[len(lines)-1])
-		if len(matches) != 0 {
+		if readSize == n && readSize < maxReadSize {
+			readSize *= 2
+		}
+		output.Write(b[:n])
+		tempSlice := bytes.ReplaceAll(output.Bytes(), []byte("\r\n"), []byte("\n"))
+		tempSlice = bytes.ReplaceAll(tempSlice, []byte("\r"), []byte("\n"))
+		if prompt.Match(tempSlice[bytes.LastIndex(tempSlice, []byte("\n"))+1:]) {
 			break
 		}
 	}
 
-	return output, nil
+	return output.String(), nil
 }
