@@ -46,7 +46,9 @@ func (i ios) Configure(ctx context.Context, commands []string) (string, error) {
 
 // Dial opens a connection to a device.
 func (i ios) Dial(ctx context.Context) error {
-	return establishConnection(ctx, i, i.Connection, i.basePrompt(), "terminal length 0")
+	commands := []string{"terminal length 0", "terminal width 511"}
+
+	return establishConnection(ctx, i, i.Connection, i.basePrompt(), commands)
 }
 
 // Enable elevates privileges.

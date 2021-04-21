@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func establishConnection(ctx context.Context, p Platform, c connection, prompt *regexp.Regexp, disablePager string) error {
+func establishConnection(ctx context.Context, p Platform, c connection, prompt *regexp.Regexp, preparationCommands []string) error {
 	err := c.Dial(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to open connection: %w", err)
@@ -19,9 +19,11 @@ func establishConnection(ctx context.Context, p Platform, c connection, prompt *
 		return fmt.Errorf("unable to find the initial prompt: %w", err)
 	}
 
-	_, err = p.Run(ctx, disablePager)
-	if err != nil {
-		return fmt.Errorf("unable to disable terminal paging: %w", err)
+	for _, command := range preparationCommands {
+		output, err := p.Run(ctx, command)
+		if err != nil {
+			return fmt.Errorf("unable to prepare session using the command '%s': %w", output, err)
+		}
 	}
 
 	return nil
