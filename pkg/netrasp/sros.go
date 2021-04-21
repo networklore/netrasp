@@ -48,7 +48,7 @@ func (s sros) Configure(ctx context.Context, commands []string) (string, error) 
 
 // Dial opens a connection to a device.
 func (s sros) Dial(ctx context.Context) error {
-	return establishConnection(ctx, s, s.Connection, s.basePrompt(), "environment more false")
+	return establishConnection(ctx, s, s.Connection, s.basePrompt(), []string{"environment more false"})
 }
 
 // Enable elevates privileges.

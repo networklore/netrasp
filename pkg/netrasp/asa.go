@@ -11,5 +11,5 @@ type asa struct {
 
 // Dial opens a connection to a device.
 func (a asa) Dial(ctx context.Context) error {
-	return establishConnection(ctx, a, a.Connection, a.basePrompt(), "no terminal pager")
+	return establishConnection(ctx, a, a.Connection, a.basePrompt(), []string{"no terminal pager"})
 }
