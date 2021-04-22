@@ -23,25 +23,26 @@ func (i ios) Close(ctx context.Context) error {
 }
 
 // Configure device.
-func (i ios) Configure(ctx context.Context, commands []string) (string, error) {
-	var output string
+func (i ios) Configure(ctx context.Context, commands []string) (ConfigResult, error) {
+	var result ConfigResult
 	_, err := i.Run(ctx, "configure terminal")
 	if err != nil {
-		return "", fmt.Errorf("unable to enter config mode: %w", err)
+		return result, fmt.Errorf("unable to enter config mode: %w", err)
 	}
 	for _, command := range commands {
-		result, err := i.Run(ctx, command)
+		output, err := i.Run(ctx, command)
+		configCommand := ConfigCommand{Command: command, Output: output}
+		result.ConfigCommands = append(result.ConfigCommands, configCommand)
 		if err != nil {
-			return output, fmt.Errorf("unable to run command '%s': %w", command, err)
+			return result, fmt.Errorf("unable to run command '%s': %w", command, err)
 		}
-		output += result
 	}
 	_, err = i.Run(ctx, "end")
 	if err != nil {
-		return output, fmt.Errorf("unable to exit from config mode: %w", err)
+		return result, fmt.Errorf("unable to exit from config mode: %w", err)
 	}
 
-	return output, nil
+	return result, nil
 }
 
 // Dial opens a connection to a device.
