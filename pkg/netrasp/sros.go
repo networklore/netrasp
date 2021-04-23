@@ -20,30 +20,32 @@ func (s sros) Close(ctx context.Context) error {
 }
 
 // Configure device.
-func (s sros) Configure(ctx context.Context, commands []string) (string, error) {
-	var output string
+func (s sros) Configure(ctx context.Context, commands []string) (ConfigResult, error) {
+	var result ConfigResult
+
 	_, err := s.Run(ctx, "edit-config exclusive")
 	if err != nil {
-		return "", fmt.Errorf("unable to enter exclusive edit mode: %w", err)
+		return result, fmt.Errorf("unable to enter exclusive edit mode: %w", err)
 	}
 	for _, command := range commands {
-		result, err := s.Run(ctx, command)
+		output, err := s.Run(ctx, command)
+		configCommand := ConfigCommand{Command: command, Output: output}
+		result.ConfigCommands = append(result.ConfigCommands, configCommand)
 		if err != nil {
-			return output, fmt.Errorf("unable to run command '%s': %w", command, err)
+			return result, fmt.Errorf("unable to run command '%s': %w", command, err)
 		}
-		output += result
 	}
 	_, err = s.Run(ctx, "commit")
 	if err != nil {
-		return output, fmt.Errorf("unable to commit configuration: %w", err)
+		return result, fmt.Errorf("unable to commit configuration: %w", err)
 	}
 
 	_, err = s.Run(ctx, "quit-config")
 	if err != nil {
-		return output, fmt.Errorf("unable to quit from configuration mode: %w", err)
+		return result, fmt.Errorf("unable to quit from configuration mode: %w", err)
 	}
 
-	return output, nil
+	return result, nil
 }
 
 // Dial opens a connection to a device.

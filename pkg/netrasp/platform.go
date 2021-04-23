@@ -13,7 +13,7 @@ type Platform interface {
 	// Disconnect from a device
 	Close(context.Context) error
 	// Configure device with the provided commands
-	Configure(context.Context, []string) (string, error)
+	Configure(context.Context, []string) (ConfigResult, error)
 	// Open a connection to a device
 	Dial(context.Context) error
 	// Elevate privileges on device
