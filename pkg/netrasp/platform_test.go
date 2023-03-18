@@ -26,6 +26,11 @@ func TestNewDevice(t *testing.T) {
 			succeed:  true,
 		},
 		{
+			name:     "huawei_smartax",
+			platform: "smartax",
+			succeed:  true,
+		},
+		{
 			name:     "driver_missing",
 			platform: "",
 			succeed:  false,

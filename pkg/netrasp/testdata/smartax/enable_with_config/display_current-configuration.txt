@@ -1,0 +1,14 @@
+gpon1(config)#display current-configuration
+
+ sysman server source telnet any-interface
+ sysman server source telnet ipv6 ::
+ sysman server source twamp any-interface
+ sysman server source ancp-proxy any-interface
+ sysman server source ipdr any-interface
+#
+undo evpn-route-origin igp
+#
+return
+
+gpon1(config)#
+
