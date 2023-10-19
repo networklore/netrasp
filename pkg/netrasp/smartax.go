@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-var generalSmartaxPrompt = regexp.MustCompile(`^[a-zA-Z0-9_()-]+[>|#]`)
-var enableSmartaxPrompt = regexp.MustCompile(`^[a-zA-Z0-9_-]+#`)
+var generalSmartaxPrompt = regexp.MustCompile(`^[a-zA-Z0-9<"_()-]+[>|#]`)
+var enableSmartaxPrompt = regexp.MustCompile(`^[a-zA-Z0-9<"_-]+#`)
 
 // Smartax Huawei OLTs MA5XXX.
 type smartax struct {
