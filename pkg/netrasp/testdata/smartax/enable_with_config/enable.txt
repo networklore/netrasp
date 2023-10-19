@@ -1,0 +1,3 @@
+gpon1>enable
+
+gpon1#

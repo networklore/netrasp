@@ -1,0 +1,4 @@
+gpon1#display version
+
+VERSION : MA5800V100R015C10
+gpon1#

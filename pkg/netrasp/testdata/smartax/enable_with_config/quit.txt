@@ -1,0 +1,3 @@
+gpon1(config)#quit
+
+gpon1#

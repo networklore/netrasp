@@ -1,0 +1,3 @@
+gpon1#config
+
+gpon1(config)#
